@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/favicon.ico">
+    <title>NAS2 Free Memory</title>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src=" https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+    var channel = '1049900'; // Thingspeak channel ID.
+    var apikey = ''; // Thingspeak read API key. Can be left blank if channel is public.
+    google.charts.load('current', {'packages':['line']});
+    google.charts.setOnLoadCallback(drawChart);
+    function drawChart() {
+      $.getJSON('https://api.thingspeak.com/channels/' + channel + '/feed.json?api_key=' + apikey, function(data) {
+        var jsonData = '{"cols":[{"label":"Time","type":"string"},{"label":"Free Memory","type":"number"}],"rows": [\n';
+        for (i in data.feeds) {
+          jsonData += '{"c":[{"v":"' + new Date(data.feeds[i].created_at).toLocaleString('en-GB') + '"},{"v":' + data.feeds[i].field1 + '}]}';
+          if (i == data.feeds.length - 1) {
+            jsonData += '\n'
+          } else {
+            jsonData += ',\n'
+          }
+        }
+        jsonData += ']}\n'
+        var options = {
+          curveType: 'function',
+          legend: { position: 'right' },
+          vAxis: {
+            viewWindow: {
+              min: 0,
+              max: 1000000
+            }
+          }
+        };
+        var data = new google.visualization.DataTable(jsonData);
+        var chart = new google.charts.Line(document.getElementById('chart_div'));
+        chart.draw(data, google.charts.Line.convertOptions(options));
+      });
+    }
+    </script>
+    <style>
+    .loader {
+      position: fixed;
+      left: 40%;
+    }
+    @-webkit-keyframes load8 {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes load8 {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: rgb(50, 54, 57);
+        color: #ccc;
+      }
+      a {
+        color: #4af626;
+      }
+      line {
+        stroke: #4a4a4a;
+      }
+      rect:nth-of-type(1) {
+        fill: rgb(50, 54, 57);
+      }
+      rect:nth-of-type(3) {
+        fill: rgb(50, 54, 57);
+      }
+      text:nth-of-type(1) {
+        fill: #757575;
+      }
+    }
+    </style>
+  </head>
+  <body>
+    <div id="chart_div" style="width:1350px;height:600px;"><div class="loader"><img src="/loading.svg" alt="Loading..."></div>
+  </body>
+</html>
